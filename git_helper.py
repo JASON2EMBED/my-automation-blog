@@ -34,6 +34,7 @@ _PREFIX_RULES = [
     ("blog/html/",     "docs",   "HTML 변환"),
     ("blog/",          "docs",   "블로그 파일"),
     (".py",            "feat",   "Python 스크립트"),
+    (".bat",           "chore",  "실행 스크립트"),
     ("requirements",   "chore",  "패키지 설정"),
     (".gitignore",     "chore",  "Git 설정"),
     (".md",            "docs",   "문서"),
@@ -121,7 +122,7 @@ def gitupdate():
     # 2. 변경 내역 출력
     print(f"\n[감지] 변경된 파일 {len(files)}개:")
     for f in files:
-        print(f"  {f['action']:6s}  {f['path']}")
+        print(f"  [{f['action']}] {f['path']}")
 
     # 3. 커밋 메시지 자동 생성
     message = _build_commit_message(files)
