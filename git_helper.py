@@ -22,41 +22,41 @@ def quick_save(message=None):
     if not message:
         message = f"Auto commit: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     
-    print("📝 변경사항 추가 중...")
+    print("[추가] 변경사항 추가 중...")
     run_command("git add .")
-    
-    print(f"💾 커밋 중: {message}")
+
+    print(f"[커밋] {message}")
     code, out, err = run_command(f'git commit -m "{message}"')
-    
+
     if code != 0 and "nothing to commit" in out + err:
-        print("ℹ️  변경사항이 없습니다.")
+        print("[정보] 변경사항이 없습니다.")
         return
-    
-    print("☁️  GitHub에 업로드 중...")
+
+    print("[업로드] GitHub에 업로드 중...")
     code, out, err = run_command("git push")
-    
+
     if code == 0:
-        print("✅ 완료! GitHub에 동기화되었습니다.")
+        print("[완료] GitHub에 동기화되었습니다.")
     else:
-        print(f"❌ 에러 발생: {err}")
+        print(f"[오류] {err}")
 
 
 def sync():
     """최신 버전 가져오기"""
-    print("🔄 최신 버전 가져오는 중...")
+    print("[동기화] 최신 버전 가져오는 중...")
     code, out, err = run_command("git pull")
-    
+
     if code == 0:
-        print("✅ 동기화 완료!")
+        print("[완료] 동기화 완료!")
         if "Already up to date" in out:
-            print("ℹ️  이미 최신 버전입니다.")
+            print("[정보] 이미 최신 버전입니다.")
     else:
-        print(f"❌ 에러 발생: {err}")
+        print(f"[오류] {err}")
 
 
 def status():
     """상태 확인"""
-    print("📊 Git 상태 확인 중...")
+    print("[상태] Git 상태 확인 중...")
     code, out, err = run_command("git status")
     print(out)
 

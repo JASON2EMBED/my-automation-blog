@@ -187,8 +187,8 @@ def convert_md_to_html(md_file, output_dir="blog/html"):
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(html_template)
     
-    print(f"✅ 변환 완료: {output_file}")
-    print(f"\n📋 사용 방법:")
+    print(f"[완료] 변환 완료: {output_file}")
+    print(f"\n[사용 방법]")
     print(f"1. {output_file} 파일을 브라우저로 열기")
     print(f"2. 전체 선택 (Ctrl+A)")
     print(f"3. 복사 (Ctrl+C)")

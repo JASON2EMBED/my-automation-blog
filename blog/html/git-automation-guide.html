@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+/* 전체 컨테이너 */
+.blog-post {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.8;
+    color: #333;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* 제목 스타일 */
+.blog-post h1 {
+    font-size: 2em;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #333;
+}
+
+.blog-post h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 40px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #ddd;
+    color: #222;
+}
+
+.blog-post h3 {
+    font-size: 1.25em;
+    font-weight: bold;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: #444;
+}
+
+/* 코드 블록 스타일 */
+.blog-post pre {
+    background-color: #f6f8fa;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-size: 14px;
+}
+
+.blog-post code {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+}
+
+/* 인라인 코드 */
+.blog-post p code,
+.blog-post li code {
+    background-color: #f6f8fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid #e1e4e8;
+    font-size: 0.9em;
+}
+
+/* 단락 스타일 */
+.blog-post p {
+    margin: 16px 0;
+}
+
+/* 리스트 스타일 */
+.blog-post ul, .blog-post ol {
+    margin: 16px 0;
+    padding-left: 28px;
+}
+
+.blog-post li {
+    margin: 8px 0;
+}
+
+/* 링크 스타일 */
+.blog-post a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+.blog-post a:hover {
+    text-decoration: underline;
+}
+
+/* 인용구 스타일 */
+.blog-post blockquote {
+    border-left: 4px solid #dfe2e5;
+    padding-left: 16px;
+    margin: 16px 0;
+    color: #6a737d;
+}
+
+/* 테이블 스타일 */
+.blog-post table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+}
+
+.blog-post table th,
+.blog-post table td {
+    border: 1px solid #dfe2e5;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.blog-post table th {
+    background-color: #f6f8fa;
+    font-weight: bold;
+}
+
+/* 구분선 */
+.blog-post hr {
+    border: none;
+    border-top: 2px solid #e1e4e8;
+    margin: 32px 0;
+}
+
+/* 이미지 */
+.blog-post img {
+    max-width: 100%;
+    height: auto;
+    margin: 16px 0;
+    border-radius: 4px;
+}
+</style>
+</head>
+<body>
+<div class="blog-post">
+<h1 id="git-python">Git이 무서운 당신을 위한 Python 자동화 도구 만들기</h1>
+<p><strong>카테고리</strong>: Python / 자동화<br />
+<strong>작성일</strong>: 2026-04-23<br />
+<strong>태그</strong>: Python, Git, 자동화, 초보자</p>
+<hr />
+<h2 id="_1">들어가며</h2>
+<p>Git을 쓰다 보면 매번 반복하는 작업이 있습니다.</p>
+<pre class="codehilite"><code class="language-bash">git add .
+git commit -m &quot;수정했음&quot;
+git push
+</code></pre>
+
+<p>파일 하나 고칠 때마다 이 세 줄을 입력하는 게 귀찮지 않으신가요?<br />
+저도 그랬습니다. 그래서 Python으로 이 과정을 한 줄로 줄이는 도구를 만들었습니다.</p>
+<p>이 글에서는 <code>git_helper.py</code>를 만들면서 배운 내용을 공유합니다.<br />
+Git을 처음 쓰시는 분도 이해할 수 있도록 최대한 친절하게 설명할게요.</p>
+<hr />
+<h2 id="_2">완성된 모습 먼저 보기</h2>
+<p>만들고 나면 이렇게 쓸 수 있습니다.</p>
+<pre class="codehilite"><code class="language-bash"># 기존 방식 (3줄)
+git add .
+git commit -m &quot;블로그 글 작성 완료&quot;
+git push
+
+# 자동화 이후 (1줄)
+python git_helper.py save &quot;블로그 글 작성 완료&quot;
+</code></pre>
+
+<p>메시지를 생략하면 현재 시각을 자동으로 커밋 메시지로 사용합니다.</p>
+<pre class="codehilite"><code class="language-bash">python git_helper.py save
+# → Auto commit: 2026-04-23 14:32:10
+</code></pre>
+
+<hr />
+<h2 id="subprocess">핵심 개념: subprocess로 터미널 명령어 실행하기</h2>
+<p>Python에서 Git 명령어를 실행하려면 <code>subprocess</code> 모듈을 사용합니다.<br />
+쉽게 말하면 "Python이 대신 터미널에 명령어를 입력해 준다"는 개념입니다.</p>
+<pre class="codehilite"><code class="language-python">import subprocess
+
+result = subprocess.run(
+    &quot;git status&quot;,       # 실행할 명령어
+    shell=True,         # 터미널(쉘)을 통해 실행
+    capture_output=True, # 출력 결과를 변수로 받기
+    text=True           # 결과를 문자열로 변환
+)
+
+print(result.stdout)   # 정상 출력
+print(result.stderr)   # 에러 출력
+print(result.returncode) # 0이면 성공, 그 외는 실패
+</code></pre>
+
+<p><code>returncode</code>가 0이면 명령어가 성공한 것이고, 1 이상이면 오류가 발생한 것입니다.<br />
+이 값으로 성공/실패를 판단합니다.</p>
+<hr />
+<h2 id="_3">전체 코드</h2>
+<pre class="codehilite"><code class="language-python">&quot;&quot;&quot;
+Git 작업을 간편하게 해주는 헬퍼 스크립트
+
+사용법:
+    python git_helper.py save [메시지]  - 저장 및 푸시
+    python git_helper.py sync           - 최신 버전 가져오기
+    python git_helper.py status         - 상태 확인
+&quot;&quot;&quot;
+import subprocess
+import sys
+from datetime import datetime
+
+
+def run_command(command):
+    &quot;&quot;&quot;명령어 실행 후 결과 반환&quot;&quot;&quot;
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    return result.returncode, result.stdout, result.stderr
+
+
+def quick_save(message=None):
+    &quot;&quot;&quot;빠른 저장: add → commit → push 한 번에&quot;&quot;&quot;
+    if not message:
+        message = f&quot;Auto commit: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}&quot;
+
+    print(&quot;📝 변경사항 추가 중...&quot;)
+    run_command(&quot;git add .&quot;)
+
+    print(f&quot;💾 커밋 중: {message}&quot;)
+    code, out, err = run_command(f'git commit -m &quot;{message}&quot;')
+
+    if code != 0 and &quot;nothing to commit&quot; in out + err:
+        print(&quot;ℹ️  변경사항이 없습니다.&quot;)
+        return
+
+    print(&quot;☁️  GitHub에 업로드 중...&quot;)
+    code, out, err = run_command(&quot;git push&quot;)
+
+    if code == 0:
+        print(&quot;✅ 완료! GitHub에 동기화되었습니다.&quot;)
+    else:
+        print(f&quot;❌ 에러 발생: {err}&quot;)
+
+
+def sync():
+    &quot;&quot;&quot;원격 저장소에서 최신 변경사항 가져오기&quot;&quot;&quot;
+    print(&quot;🔄 최신 버전 가져오는 중...&quot;)
+    code, out, err = run_command(&quot;git pull&quot;)
+
+    if code == 0:
+        print(&quot;✅ 동기화 완료!&quot;)
+        if &quot;Already up to date&quot; in out:
+            print(&quot;ℹ️  이미 최신 버전입니다.&quot;)
+    else:
+        print(f&quot;❌ 에러 발생: {err}&quot;)
+
+
+def status():
+    &quot;&quot;&quot;현재 Git 상태 출력&quot;&quot;&quot;
+    print(&quot;📊 Git 상태 확인 중...&quot;)
+    code, out, err = run_command(&quot;git status&quot;)
+    print(out)
+
+
+if __name__ == &quot;__main__&quot;:
+    if len(sys.argv) &lt; 2:
+        print(&quot;&quot;&quot;
+사용법:
+    python git_helper.py save [메시지]  - 저장 및 푸시
+    python git_helper.py sync           - 최신 버전 가져오기
+    python git_helper.py status         - 상태 확인
+
+예시:
+    python git_helper.py save &quot;블로그 글 작성 완료&quot;
+    python git_helper.py sync
+        &quot;&quot;&quot;)
+        sys.exit(1)
+
+    command = sys.argv[1]
+
+    if command == &quot;save&quot;:
+        message = &quot; &quot;.join(sys.argv[2:]) if len(sys.argv) &gt; 2 else None
+        quick_save(message)
+    elif command == &quot;sync&quot;:
+        sync()
+    elif command == &quot;status&quot;:
+        status()
+    else:
+        print(f&quot;❌ 알 수 없는 명령어: {command}&quot;)
+        sys.exit(1)
+</code></pre>
+
+<hr />
+<h2 id="_4">기능별 설명</h2>
+<h3 id="1-quick_save-add-commit-push">1. <code>quick_save()</code> — add + commit + push 한 번에</h3>
+<p>가장 자주 쓰는 기능입니다. 세 단계를 하나로 묶었습니다.</p>
+<pre class="codehilite"><code class="language-python">def quick_save(message=None):
+    if not message:
+        # 메시지 없으면 현재 시각을 자동으로 사용
+        message = f&quot;Auto commit: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}&quot;
+
+    run_command(&quot;git add .&quot;)          # 1단계: 모든 변경사항 스테이징
+    run_command(f'git commit -m &quot;{message}&quot;')  # 2단계: 커밋
+    run_command(&quot;git push&quot;)           # 3단계: 원격에 푸시
+</code></pre>
+
+<p><strong>실행 예시:</strong></p>
+<pre class="codehilite"><code class="language-bash">$ python git_helper.py save &quot;기능 추가: 자동 저장&quot;
+📝 변경사항 추가 중...
+💾 커밋 중: 기능 추가: 자동 저장
+☁️  GitHub에 업로드 중...
+✅ 완료! GitHub에 동기화되었습니다.
+</code></pre>
+
+<p>변경사항이 없을 때도 안전하게 처리합니다.</p>
+<pre class="codehilite"><code class="language-bash">$ python git_helper.py save
+ℹ️  변경사항이 없습니다.
+</code></pre>
+
+<h3 id="2-sync">2. <code>sync()</code> — 최신 버전 가져오기</h3>
+<p>다른 컴퓨터에서 작업했거나 GitHub에서 직접 수정한 경우, 최신 내용을 가져올 때 사용합니다.</p>
+<pre class="codehilite"><code class="language-bash">$ python git_helper.py sync
+🔄 최신 버전 가져오는 중...
+✅ 동기화 완료!
+ℹ️  이미 최신 버전입니다.
+</code></pre>
+
+<h3 id="3-status">3. <code>status()</code> — 현재 상태 확인</h3>
+<p>어떤 파일이 변경됐는지 확인합니다. <code>git status</code>를 그대로 출력합니다.</p>
+<pre class="codehilite"><code class="language-bash">$ python git_helper.py status
+📊 Git 상태 확인 중...
+On branch main
+Changes not staged for commit:
+    modified:   blog/drafts/git-automation-guide.md
+</code></pre>
+
+<hr />
+<h2 id="sysargv">코드 구조 설명: <code>sys.argv</code>란?</h2>
+<p>터미널에서 Python 스크립트를 실행할 때 인자를 넘길 수 있습니다.</p>
+<pre class="codehilite"><code class="language-bash">python git_helper.py save &quot;블로그 작성&quot;
+</code></pre>
+
+<p>이때 <code>sys.argv</code>의 값은 이렇습니다.</p>
+<pre class="codehilite"><code class="language-python">sys.argv[0]  # &quot;git_helper.py&quot;  (스크립트 이름)
+sys.argv[1]  # &quot;save&quot;           (첫 번째 인자: 명령어)
+sys.argv[2]  # &quot;블로그 작성&quot;    (두 번째 인자: 메시지)
+</code></pre>
+
+<p>커밋 메시지가 여러 단어일 때도 대응합니다.</p>
+<pre class="codehilite"><code class="language-python"># &quot;블로그 글 작성 완료&quot; 처럼 띄어쓰기 있는 메시지 처리
+message = &quot; &quot;.join(sys.argv[2:]) if len(sys.argv) &gt; 2 else None
+</code></pre>
+
+<hr />
+<h2 id="_5">실제 사용 시나리오</h2>
+<p><strong>블로그 글 초안 저장:</strong></p>
+<pre class="codehilite"><code class="language-bash">python git_helper.py save &quot;docs: git 자동화 글 초안 작성&quot;
+</code></pre>
+
+<p><strong>코드 수정 후 자동 저장 (메시지 생략):</strong></p>
+<pre class="codehilite"><code class="language-bash">python git_helper.py save
+# → Auto commit: 2026-04-23 15:00:00
+</code></pre>
+
+<p><strong>다른 PC에서 작업 시작 전:</strong></p>
+<pre class="codehilite"><code class="language-bash">python git_helper.py sync
+</code></pre>
+
+<p><strong>뭔가 수정했는데 어떤 파일인지 모를 때:</strong></p>
+<pre class="codehilite"><code class="language-bash">python git_helper.py status
+</code></pre>
+
+<hr />
+<h2 id="_6">주의사항</h2>
+<p><strong><code>git add .</code>은 모든 파일을 포함합니다.</strong><br />
+<code>.env</code> 같은 민감한 파일이 있다면 반드시 <code>.gitignore</code>에 등록하세요.</p>
+<pre class="codehilite"><code class="language-bash"># .gitignore 예시
+.env
+data/
+logs/
+__pycache__/
+</code></pre>
+
+<p><strong>커밋 메시지 컨벤션을 지키면 나중에 편합니다.</strong><br />
+<code>feat:</code>, <code>fix:</code>, <code>docs:</code> 같은 접두사를 사용하면 히스토리를 보기 쉬워집니다.</p>
+<pre class="codehilite"><code class="language-bash">python git_helper.py save &quot;feat: 웹 스크래핑 기능 추가&quot;
+python git_helper.py save &quot;fix: 인코딩 오류 수정&quot;
+python git_helper.py save &quot;docs: README 업데이트&quot;
+</code></pre>
+
+<hr />
+<h2 id="_7">마무리</h2>
+<p>이 스크립트 덕분에 Git이 한결 편해졌습니다.<br />
+터미널에서 세 줄 입력하던 것을 이제는 한 줄로 끝냅니다.</p>
+<p>Python의 <code>subprocess</code>를 배우면 Git 말고도 다양한 터미널 명령어를 자동화할 수 있습니다.<br />
+다음에는 이 도구를 확장해서 커밋 히스토리 자동 요약이나 브랜치 관리 자동화도 만들어볼 예정입니다.</p>
+<p>코드 전체는 GitHub에서 확인하실 수 있습니다.<br />
+👉 <a href="https://github.com/JASON2EMBED/my-automation-blog">https://github.com/JASON2EMBED/my-automation-blog</a></p>
+<hr />
+<p><em>궁금한 점은 댓글로 남겨주세요!</em></p>
+</div>
+</body>
+</html>
