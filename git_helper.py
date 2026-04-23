@@ -57,14 +57,16 @@ def _parse_status() -> list[dict]:
         "M": "수정", "A": "추가", "D": "삭제",
         "R": "이름변경", "?": "새 파일",
     }
-    for line in out.strip().splitlines():
-        if not line.strip():
+    for line in out.splitlines():
+        stripped = line.strip()
+        if not stripped:
             continue
-        xy = line[:2].strip()          # 상태 코드 (XY 중 비어있지 않은 쪽)
-        code = xy[-1] if xy else "?"   # 워킹트리 상태 우선
-        path = line[3:].strip()
-        if " -> " in path:             # rename 처리
-            path = path.split(" -> ")[-1]
+        tokens = stripped.split()          # ['M', 'git_helper.py'] 또는 ['??', 'file.py']
+        if not tokens:
+            continue
+        xy = tokens[0]                     # 상태 코드 ('M', '??', 'MM' 등)
+        code = xy.replace(" ", "")[-1]     # 마지막 비공백 문자 (워킹트리 상태 우선)
+        path = tokens[-1]                  # 마지막 토큰 = 파일 경로 (rename도 대응)
         action = status_map.get(code, "변경")
         prefix, label = _classify_file(path)
         files.append({
@@ -234,3 +236,4 @@ if __name__ == "__main__":
         print(f"[오류] 알 수 없는 명령어: {cmd}")
         print(HELP)
         sys.exit(1)
+# test
