@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+/* 전체 컨테이너 */
+.blog-post {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.8;
+    color: #333;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* 제목 스타일 */
+.blog-post h1 {
+    font-size: 2em;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #333;
+}
+
+.blog-post h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 40px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #ddd;
+    color: #222;
+}
+
+.blog-post h3 {
+    font-size: 1.25em;
+    font-weight: bold;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: #444;
+}
+
+/* 코드 블록 스타일 */
+.blog-post pre {
+    background-color: #f6f8fa;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-size: 14px;
+}
+
+.blog-post code {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+}
+
+/* 인라인 코드 */
+.blog-post p code,
+.blog-post li code {
+    background-color: #f6f8fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid #e1e4e8;
+    font-size: 0.9em;
+}
+
+/* 단락 스타일 */
+.blog-post p {
+    margin: 16px 0;
+}
+
+/* 리스트 스타일 */
+.blog-post ul, .blog-post ol {
+    margin: 16px 0;
+    padding-left: 28px;
+}
+
+.blog-post li {
+    margin: 8px 0;
+}
+
+/* 링크 스타일 */
+.blog-post a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+.blog-post a:hover {
+    text-decoration: underline;
+}
+
+/* 인용구 스타일 */
+.blog-post blockquote {
+    border-left: 4px solid #dfe2e5;
+    padding-left: 16px;
+    margin: 16px 0;
+    color: #6a737d;
+}
+
+/* 테이블 스타일 */
+.blog-post table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+}
+
+.blog-post table th,
+.blog-post table td {
+    border: 1px solid #dfe2e5;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.blog-post table th {
+    background-color: #f6f8fa;
+    font-weight: bold;
+}
+
+/* 구분선 */
+.blog-post hr {
+    border: none;
+    border-top: 2px solid #e1e4e8;
+    margin: 32px 0;
+}
+
+/* 이미지 */
+.blog-post img {
+    max-width: 100%;
+    height: auto;
+    margin: 16px 0;
+    border-radius: 4px;
+}
+</style>
+</head>
+<body>
+<div class="blog-post">
+<h1 id="git-gitupdate">Git 커밋을 한 단어로 끝내는 전역 명령어 만들기 — gitupdate</h1>
+<p><strong>카테고리</strong>: Python / 자동화<br />
+<strong>작성일</strong>: 2026-04-23<br />
+<strong>태그</strong>: Python, Git, 자동화, Windows, 생산성</p>
+<hr />
+<h2 id="_1">이전 글에서 이어서</h2>
+<p>지난 글에서 <code>git_helper.py</code>를 만들어서 <code>add → commit → push</code> 세 단계를 한 번에 처리했습니다.</p>
+<pre class="codehilite"><code class="language-bash">python git_helper.py save &quot;블로그 글 작성 완료&quot;
+</code></pre>
+
+<p>이번에는 한 단계 더 나아갑니다.</p>
+<ol>
+<li><strong>커밋 메시지도 자동 생성</strong> — 변경된 파일을 분석해서 알아서 씁니다</li>
+<li><strong>어느 경로에서든 사용</strong> — 프로젝트 폴더 안에 있을 필요가 없습니다</li>
+</ol>
+<p>최종 목표는 이것입니다.</p>
+<pre class="codehilite"><code class="language-bash"># 어떤 Git 저장소에서든, 그냥 이것만 입력
+gitupdate
+</code></pre>
+
+<hr />
+<h2 id="_2">완성된 모습</h2>
+<pre class="codehilite"><code>====================================================
+ gitupdate  —  my-automation-blog
+====================================================
+
+[감지] 변경된 파일 3개:
+  [수정] git_helper.py
+  [새 파일] blog/drafts/2026-04-23-gitupdate.md
+  [수정] requirements.txt
+
+[메시지] feat: Python 스크립트 git_helper.py / 블로그 초안 2026-04-23-gitupdate.md / 패키지 설정 requirements.txt (3개 파일 변경)
+
+[추가]   git add .
+[커밋]   git commit ...
+[업로드] git push ...
+
+====================================================
+ 완료! GitHub에 동기화되었습니다.
+====================================================
+</code></pre>
+
+<p>변경된 파일을 스스로 파악하고, 파일 종류에 따라 <code>feat:</code> / <code>docs:</code> / <code>chore:</code> 접두사까지 붙인 커밋 메시지를 자동으로 만듭니다.</p>
+<hr />
+<h2 id="_3">전체 구조</h2>
+<pre class="codehilite"><code>C:\Users\User\bin\        ← Windows PATH에 등록된 폴더
+  ├── gitupdate.py        ← 핵심 로직
+  └── gitupdate.bat       ← gitupdate 명령어 진입점
+</code></pre>
+
+<p><code>gitupdate.bat</code>은 단 두 줄짜리 실행 파일입니다.</p>
+<pre class="codehilite"><code class="language-batch">@echo off
+python &quot;%~dp0gitupdate.py&quot; %*
+</code></pre>
+
+<p><code>%~dp0</code>는 <code>.bat</code> 파일 자신이 있는 경로를 의미합니다. 어디서 실행하든 <code>gitupdate.py</code>를 정확히 찾아갑니다.</p>
+<hr />
+<h2 id="1-git">핵심 1 — 현재 디렉토리가 Git 저장소인지 확인</h2>
+<p>가장 먼저 할 일은 "지금 여기가 Git 저장소인가?" 확인입니다.</p>
+<pre class="codehilite"><code class="language-python">def main():
+    code, out, _ = run(&quot;git rev-parse --show-toplevel&quot;)
+    if code != 0:
+        print(f&quot;[오류] 현재 경로는 Git 저장소가 아닙니다: {os.getcwd()}&quot;)
+        print(&quot;       git init 으로 저장소를 먼저 초기화하세요.&quot;)
+        sys.exit(1)
+
+    repo_root = out.strip()
+    print(f&quot; gitupdate  —  {Path(repo_root).name}&quot;)
+</code></pre>
+
+<p><code>git rev-parse --show-toplevel</code>은 현재 위치에서 가장 가까운 Git 저장소 루트 경로를 반환합니다. 저장소가 아니면 오류 코드를 반환하므로, 이걸로 저장소 여부를 판단합니다.</p>
+<p><strong>실행 예시 (저장소가 아닌 경우):</strong></p>
+<pre class="codehilite"><code class="language-bash">$ cd C:\Users\User\Documents
+$ gitupdate
+[오류] 현재 경로는 Git 저장소가 아닙니다: C:\Users\User\Documents
+       git init 으로 저장소를 먼저 초기화하세요.
+</code></pre>
+
+<hr />
+<h2 id="2">핵심 2 — 변경 파일 목록 파싱</h2>
+<p><code>git status --porcelain</code>은 변경 파일 목록을 깔끔한 형식으로 출력합니다.</p>
+<pre class="codehilite"><code class="language-bash">$ git status --porcelain
+M  git_helper.py
+?? blog/drafts/new-post.md
+ D old_file.txt
+</code></pre>
+
+<p>각 줄은 <code>상태코드 + 파일경로</code> 형식입니다. Python으로 파싱합니다.</p>
+<pre class="codehilite"><code class="language-python">def _parse_changed_files():
+    _, out, _ = run(&quot;git status --porcelain&quot;)
+    files = []
+    status_map = {&quot;M&quot;: &quot;수정&quot;, &quot;A&quot;: &quot;추가&quot;, &quot;D&quot;: &quot;삭제&quot;, &quot;R&quot;: &quot;이름변경&quot;, &quot;?&quot;: &quot;새 파일&quot;}
+
+    for line in out.splitlines():
+        tokens = line.strip().split()   # ['M', 'git_helper.py']
+        if not tokens:
+            continue
+        xy = tokens[0]                  # 상태 코드 ('M', '??', 'MM' 등)
+        code = xy.replace(&quot; &quot;, &quot;&quot;)[-1]  # 마지막 문자로 상태 판단
+        path = tokens[-1]               # 파일 경로 (rename도 마지막 토큰이 최종 경로)
+        prefix, label = _classify(path)
+        files.append({
+            &quot;path&quot;: path,
+            &quot;name&quot;: Path(path).name,
+            &quot;action&quot;: status_map.get(code, &quot;변경&quot;),
+            &quot;prefix&quot;: prefix,
+            &quot;label&quot;: label,
+        })
+    return files
+</code></pre>
+
+<p><code>tokens[-1]</code>을 쓰는 이유는 파일명 변경(<code>rename</code>) 처리 때문입니다. 이름 변경은 <code>R old.py -&gt; new.py</code> 형식으로 출력되는데, 마지막 토큰이 항상 최종 파일명이라 <code>-1</code> 인덱스로 통일하면 됩니다.</p>
+<hr />
+<h2 id="3">핵심 3 — 파일 종류로 커밋 메시지 자동 생성</h2>
+<p>파일 경로를 보고 어떤 종류의 변경인지 분류합니다.</p>
+<pre class="codehilite"><code class="language-python">_PREFIX_RULES = [
+    (&quot;blog/drafts/&quot;,  &quot;docs&quot;,  &quot;블로그 초안&quot;),
+    (&quot;blog/posts/&quot;,   &quot;docs&quot;,  &quot;블로그 글&quot;),
+    (&quot;blog/html/&quot;,    &quot;docs&quot;,  &quot;HTML 변환&quot;),
+    (&quot;.py&quot;,           &quot;feat&quot;,  &quot;Python 스크립트&quot;),
+    (&quot;.js&quot;,           &quot;feat&quot;,  &quot;JS 스크립트&quot;),
+    (&quot;.md&quot;,           &quot;docs&quot;,  &quot;문서&quot;),
+    (&quot;.bat&quot;,          &quot;chore&quot;, &quot;실행 스크립트&quot;),
+    (&quot;requirements&quot;,  &quot;chore&quot;, &quot;패키지 설정&quot;),
+    (&quot;.gitignore&quot;,    &quot;chore&quot;, &quot;Git 설정&quot;),
+]
+
+def _classify(path):
+    p = path.replace(&quot;\\&quot;, &quot;/&quot;)
+    for pattern, prefix, label in _PREFIX_RULES:
+        if p.startswith(pattern) or p.endswith(pattern):
+            return prefix, label
+    return &quot;chore&quot;, &quot;기타 파일&quot;
+</code></pre>
+
+<p>분류 결과를 모아서 커밋 메시지를 조립합니다.</p>
+<pre class="codehilite"><code class="language-python">def _auto_message(files):
+    prefixes = [f[&quot;prefix&quot;] for f in files]
+
+    # 가장 많이 나온 prefix 선택, 동수면 feat &gt; docs &gt; chore 순
+    priority = [&quot;feat&quot;, &quot;fix&quot;, &quot;docs&quot;, &quot;chore&quot;]
+    prefix = max(set(prefixes), key=lambda p: (
+        prefixes.count(p), -priority.index(p) if p in priority else -99
+    ))
+
+    # 파일 종류별로 그룹화
+    groups: dict[str, list[str]] = {}
+    for f in files:
+        groups.setdefault(f[&quot;label&quot;], []).append(f[&quot;name&quot;])
+
+    # 요약 문장 조립
+    parts = []
+    for label, names in groups.items():
+        if len(names) &lt;= 2:
+            parts.append(f&quot;{label} {', '.join(names)}&quot;)
+        else:
+            parts.append(f&quot;{label} {len(names)}개&quot;)
+
+    return f&quot;{prefix}: {' / '.join(parts)} ({len(files)}개 파일 변경)&quot;
+</code></pre>
+
+<p><strong>자동 생성 예시:</strong></p>
+<table>
+<thead>
+<tr>
+<th>변경 내용</th>
+<th>자동 생성 메시지</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.py</code> 파일 1개 수정</td>
+<td><code>feat: Python 스크립트 git_helper.py (1개 파일 변경)</code></td>
+</tr>
+<tr>
+<td>블로그 초안 + <code>.py</code></td>
+<td><code>feat: Python 스크립트 git_helper.py / 블로그 초안 new-post.md (2개 파일 변경)</code></td>
+</tr>
+<tr>
+<td><code>.md</code> 파일 3개 추가</td>
+<td><code>docs: 문서 3개 (3개 파일 변경)</code></td>
+</tr>
+<tr>
+<td><code>requirements.txt</code></td>
+<td><code>chore: 패키지 설정 requirements.txt (1개 파일 변경)</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="windows-path">Windows PATH 등록하기</h2>
+<p>스크립트를 어디서든 실행하려면 PATH에 폴더를 추가해야 합니다.</p>
+<p><strong>PowerShell에서 한 번만 실행:</strong></p>
+<pre class="codehilite"><code class="language-powershell">$binPath = &quot;C:\Users\사용자이름\bin&quot;
+$current = [Environment]::GetEnvironmentVariable(&quot;Path&quot;, &quot;User&quot;)
+[Environment]::SetEnvironmentVariable(&quot;Path&quot;, &quot;$current;$binPath&quot;, &quot;User&quot;)
+</code></pre>
+
+<p><code>"User"</code> 파라미터는 현재 사용자에게만 PATH를 적용합니다. 관리자 권한이 필요 없습니다.</p>
+<p>PATH 등록 후 <strong>터미널을 새로 열면</strong> 바로 사용 가능합니다.</p>
+<hr />
+<h2 id="_4">실제 사용 시나리오</h2>
+<p><strong>시나리오 1 — 블로그 글 작성 후 저장</strong></p>
+<pre class="codehilite"><code class="language-bash">cd C:\Users\User\my-automation-blog
+# 블로그 글 작성 완료 후
+gitupdate
+
+# 출력:
+# [감지] 변경된 파일 1개:
+#   [새 파일] blog/drafts/2026-04-23-gitupdate.md
+# [메시지] docs: 블로그 초안 2026-04-23-gitupdate.md (1개 파일 변경)
+# 완료!
+</code></pre>
+
+<p><strong>시나리오 2 — Python 코드 수정 후 저장</strong></p>
+<pre class="codehilite"><code class="language-bash">cd C:\Users\User\another-project
+gitupdate
+
+# 출력:
+# [감지] 변경된 파일 2개:
+#   [수정] src/main.py
+#   [수정] src/utils.py
+# [메시지] feat: Python 스크립트 main.py, utils.py (2개 파일 변경)
+# 완료!
+</code></pre>
+
+<p><strong>시나리오 3 — 변경사항이 없을 때</strong></p>
+<pre class="codehilite"><code class="language-bash">gitupdate
+
+# 출력:
+# [완료] 변경사항 없음. 이미 최신 상태입니다.
+</code></pre>
+
+<p><strong>시나리오 4 — Git 저장소가 아닌 폴더에서</strong></p>
+<pre class="codehilite"><code class="language-bash">cd C:\Users\User\Downloads
+gitupdate
+
+# 출력:
+# [오류] 현재 경로는 Git 저장소가 아닙니다: C:\Users\User\Downloads
+#        git init 으로 저장소를 먼저 초기화하세요.
+</code></pre>
+
+<hr />
+<h2 id="_5">마무리</h2>
+<p><code>gitupdate</code> 하나로 이제 이 모든 걸 자동으로 처리합니다.</p>
+<ul>
+<li>변경된 파일 감지</li>
+<li>파일 종류 분석 (<code>.py</code> → <code>feat:</code>, <code>.md</code> → <code>docs:</code>, 설정 파일 → <code>chore:</code>)</li>
+<li>커밋 메시지 자동 생성</li>
+<li><code>git add .</code> → <code>git commit</code> → <code>git push</code> 순서 실행</li>
+<li>Git 저장소가 아닌 경우 안전하게 오류 처리</li>
+</ul>
+<p>스크립트 전체 코드는 GitHub에서 확인하세요.<br />
+👉 <a href="https://github.com/JASON2EMBED/my-automation-blog">https://github.com/JASON2EMBED/my-automation-blog</a></p>
+<hr />
+<p><em>다음 글에서는 커밋 히스토리를 자동으로 요약해주는 기능을 추가해볼 예정입니다.</em></p>
+</div>
+</body>
+</html>
