@@ -10,10 +10,13 @@ import subprocess
 import sys
 from datetime import datetime
 
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
+
 
 def run_command(command):
     """명령어 실행"""
-    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    result = subprocess.run(command, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
     return result.returncode, result.stdout, result.stderr
 
 

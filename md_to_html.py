@@ -12,6 +12,9 @@ import os
 import sys
 from pathlib import Path
 
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
+
 
 def convert_md_to_html(md_file, output_dir="blog/html"):
     """마크다운을 HTML로 변환"""
